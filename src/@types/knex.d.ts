@@ -6,6 +6,7 @@ declare module 'knex/types/tables' {
     users: {
       id: string
       name: string
+      session_id: string
       password: string
       created_at: string
     }
@@ -15,7 +16,7 @@ declare module 'knex/types/tables' {
       description: string
       dateAndHour: string
       isHealthy: boolean
-      user_id: string
+      userId: string
       created_at: string
     }
   }
