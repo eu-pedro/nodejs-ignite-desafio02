@@ -1,16 +1,18 @@
 import fastify from 'fastify'
 import { knex } from './database'
+import { randomUUID } from 'node:crypto'
 
 const app = fastify()
 
 app.get('/hello', async () => {
-  const result = await knex('sqlite_schema').select('*')
-  return result
+  const users = await knex('users').select('*')
+
+  return users
 })
 
 app
   .listen({
-    port: 3000,
+    port: 3333,
   })
   .then(() => {
     console.log('server is running 🚀🚀')
