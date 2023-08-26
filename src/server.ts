@@ -1,5 +1,6 @@
 import fastify from 'fastify'
 import { knex } from './database'
+import { env } from './env'
 // import { randomUUID } from 'node:crypto'
 
 const app = fastify()
@@ -12,7 +13,7 @@ app.get('/hello', async () => {
 
 app
   .listen({
-    port: 3333,
+    port: env.PORT,
   })
   .then(() => {
     console.log('server is running 🚀🚀')
