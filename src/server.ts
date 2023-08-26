@@ -1,6 +1,6 @@
 import fastify from 'fastify'
 import { knex } from './database'
-import { randomUUID } from 'node:crypto'
+// import { randomUUID } from 'node:crypto'
 
 const app = fastify()
 
