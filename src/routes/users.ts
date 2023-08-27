@@ -2,32 +2,48 @@ import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { checkSessionIdExists } from '../middleware/check-session-id-exists'
 
 export async function usersRoutes(app: FastifyInstance) {
-  app.get('/', async (request, reply) => {
-    const sessionId = request.cookies.sessionId
+  app.get(
+    '/',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request) => {
+      const sessionId = request.cookies.sessionId
 
-    if (!sessionId) {
-      return reply.status(401).send({
-        error: 'unauthorized',
+      const users = await knex('users')
+        .where('session_id', sessionId)
+        .select('*')
+      return { users }
+    },
+  )
+
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request) => {
+      const getUserParamsSchema = z.object({
+        id: z.string().uuid(),
       })
-    }
 
-    const users = await knex('users').where('session_id', sessionId).select('*')
-    return { users }
-  })
+      const { id } = getUserParamsSchema.parse(request.params)
+      const { sessionId } = request.cookies
 
-  app.get('/:id', async (request) => {
-    const getUserParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+      const user = await knex('users')
+        .select()
+        .where({
+          session_id: sessionId,
+          id,
+        })
+        .first()
 
-    const { id } = getUserParamsSchema.parse(request.params)
-
-    const user = await knex('users').select().where('id', id).first()
-
-    return { user }
-  })
+      return { user }
+    },
+  )
 
   app.post('/', async (request, reply) => {
     const createUserBodySchema = z.object({
