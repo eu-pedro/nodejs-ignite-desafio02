@@ -4,8 +4,16 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 
 export async function usersRoutes(app: FastifyInstance) {
-  app.get('/', async () => {
-    const users = await knex('users').select('*')
+  app.get('/', async (request, reply) => {
+    const sessionId = request.cookies.sessionId
+
+    if (!sessionId) {
+      return reply.status(401).send({
+        error: 'unauthorized',
+      })
+    }
+
+    const users = await knex('users').where('session_id', sessionId).select('*')
     return { users }
   })
 
@@ -29,10 +37,22 @@ export async function usersRoutes(app: FastifyInstance) {
 
     const { name, password } = createUserBodySchema.parse(request.body)
 
+    let { sessionId } = request.cookies
+
+    if (!sessionId) {
+      sessionId = randomUUID()
+
+      reply.cookie('sessionId', sessionId, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 3, // 3 days
+      })
+    }
+
     await knex('users').insert({
       id: randomUUID(),
       name,
       password,
+      session_id: sessionId,
     })
 
     return reply.status(201).send()
