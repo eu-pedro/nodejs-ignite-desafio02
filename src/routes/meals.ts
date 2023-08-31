@@ -4,15 +4,26 @@ import { z } from 'zod'
 import { randomUUID } from 'crypto'
 
 export async function mealsRoutes(app: FastifyInstance) {
-  app.get('/', async () => {
-    const meals = await knex('meals').select('*')
+  app.get('/', async (request) => {
+    const getQueryRequestSchema = z.object({
+      isHealthy: z.string().optional(),
+    })
+    const { isHealthy } = getQueryRequestSchema.parse(request.query)
+
+    const isHealthyNumber = Number(isHealthy)
+
+    let meals
+
+    if (isHealthy) {
+      meals = await knex('meals').select().where('isHealthy', isHealthyNumber)
+    } else {
+      meals = await knex('meals').select('*')
+    }
 
     return { meals }
   })
 
   app.get('/:id', async (request) => {
-    console.log(request.params)
-
     const getIdMealParamsSchema = z.object({
       id: z.string().uuid(),
     })
