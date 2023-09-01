@@ -13,7 +13,7 @@ describe('User routes', () => {
   })
 
   beforeEach(async () => {
-    // execSync('npm run knex -- migrate:rollback')
+    execSync('npm run knex -- migrate:rollback')
     execSync('npm run knex -- migrate:latest')
   })
 
